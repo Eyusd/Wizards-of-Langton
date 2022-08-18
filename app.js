@@ -453,23 +453,24 @@ function isOOB(x,y) {
           let newkey = Object.keys(playersInfos)[0];
           makehost(newkey);
         }
-
-        if (playersInfos[playerId].host) {
+        if (Object.keys(playersInfos).length > 1) {
+          if (playersInfos[playerId].host) {
+            if (checkready && !checkstart) {
+              startGame();
+            }
+            if (checkalive == 1 && checkstart) {
+              delta = 3000
+              console.log('triggered')
+              setTimeout(() => {endGame()},  2500);
+            }
+          }
           if (checkready && !checkstart) {
-            startGame();
+            update(ref(database, `/infos/${playerId}`), {gamestart: true})
           }
           if (checkalive == 1 && checkstart) {
             delta = 3000
-            console.log('triggered')
-            setTimeout(() => {endGame()},  2500);
+            setTimeout(() => resetStuff(),  2500);
           }
-        }
-        if (checkready && !checkstart) {
-          update(ref(database, `/infos/${playerId}`), {gamestart: true})
-        }
-        if (checkalive == 1 && checkstart) {
-          delta = 3000
-          //setTimeout(() => resetStuff(),  2500);
         }
       }
 
