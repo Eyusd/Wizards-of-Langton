@@ -97,6 +97,27 @@ input[type="text"]:focus {
   top: 1px;
 }
 
+#ready {
+  margin-top: 300px;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  background: #59ff5a;
+  border: 0;
+  border-bottom: 2px solid #1e830b;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+#ready[available="false"] {
+  background: #b3b3b3;
+  border-bottom: 2px solid #414141;
+}
+
+#ready:active {
+  position: relative;
+  top: 1px;
+}
+
 #expl {
   margin: 40 0 0 0;
   font-family: inherit;

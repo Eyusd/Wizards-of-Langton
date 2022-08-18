@@ -170,17 +170,21 @@ function isOOB(x,y) {
 
   let playerId;
   let playerRef;
+  let playerInfosRef;
   let players = {};
   let playerElements = {};
   let tiles = {};
   let tileElements = {};
   let projs = {};
   let projElements = {};
+  let playersInfos = {};
+  let gameinfos = {gamestart: false, alive: 0, ready: false, host: false};
 
   const gameContainer = document.querySelector(".game-container");
   const playerNameInput = document.querySelector("#player-name");
   const playerColorButton = document.querySelector("#player-color");
   const fireButton = document.querySelector("#fire");
+  const readyButton = document.querySelector("#ready");
 
   function getRandomSafeSpot() {
     let pos = {x: mapData.minX + Math.floor((mapData.maxX - mapData.minX)*Math.random()), y: mapData.minY + Math.floor((mapData.maxY - mapData.minY)*Math.random())};
@@ -263,7 +267,11 @@ function isOOB(x,y) {
 
     Object.keys(players).forEach((id) => {
       if (players[id].x == projs[key].x && players[id].y == projs[key].y) {
-        update(ref(database, `players/${players[id].id}`), {alive: false, direction: "dead"});
+        if (gameinfos.gamestart) {
+          update(ref(database, `players/${players[id].id}`), {direction: "dead"});
+          update(ref(database, `infos/${players[id].id}`), {alive: false, ready: false})
+
+        }
         set(projRef, null);
         return 0
       }
@@ -286,6 +294,16 @@ function isOOB(x,y) {
     for (var i=mapData.minX; i<mapData.maxX; i++) {
       for (var j=mapData.minY; j<mapData.maxY; j++) {
         placeTile(i,j,randomFromArray(["oak", "tile", "cobble", "spruce", "void"]));
+      }
+    };
+    tilesinit = true;
+    set(ref(database, `projs`), null);
+  }
+
+  function fillTiles() {
+    for (var i=mapData.minX; i<mapData.maxX; i++) {
+      for (var j=mapData.minY; j<mapData.maxY; j++) {
+        placeTile(i,j,"oak");
       }
     };
     tilesinit = true;
@@ -341,7 +359,7 @@ function isOOB(x,y) {
   function handleArrowPress(xChange=0, yChange=0) {
     const newX = players[playerId].x + xChange;
     const newY = players[playerId].y + yChange;
-    if (players[playerId].alive) {
+    if (playersInfos[playerId].alive) {
       if (!isOOB(newX, newY) && players[playerId].coins > 0 && canStep(newX,newY)) {
         //move to the next space
         if  ((players[playerId].direction == "down" && yChange == 1) ||
@@ -379,12 +397,87 @@ function isOOB(x,y) {
     const allPlayersRef = ref(database, `players`);
     const allTilesRef = ref(database, `tiles`);
     const allProjsRef = ref(database, `projs`);
+    const allPlayersInfosRef = ref(database, `infos`);
 
-    //get(allPlayersRef).then((snapshot) => {if (Object.keys(snapshot.val()).length == 1) {initTiles()}});
+    function startGame() {
+      initTiles();
+      Object.keys(players).forEach((key) => {
+        console.log(key)
+        update(ref(database, `infos/${players[key].id}`), {gamestart: true, ready: false, alive: true})
+      })
+    }
+
+    function endGame() {
+      console.log('executed')
+      fillTiles();
+      Object.keys(players).forEach((key) => {
+        update(ref(database, `/infos/${players[key].id}`), {gamestart: false, ready: false, alive: true})
+        update(ref(database, `/players/${players[key].id}`), {direction: "down", coins: 10, y: py, x: px,})
+      }) 
+    }
+
+    function makehost(newkey) {
+      console.log(newkey)
+      update(ref(database, `/infos/${newkey}`), {host: true});
+    }
+
+    function resetStuff() {
+      console.log('executed')
+      initSelect();
+      readyButton.setAttribute("available", "false");
+    }
+
+    onValue(allPlayersInfosRef, (snapshot) => {
+      playersInfos = snapshot.val() || {}
+    })
+
+    function infiniteLoop() {
+      let checkready = true;
+      let checkalive = 0;
+      let checkhost = false;
+      let checkstart = true;
+      Object.keys(players).forEach((key) => {
+        checkready = checkready && playersInfos[key].ready;
+        checkalive = checkalive + playersInfos[key].alive;
+        checkhost = checkhost || playersInfos[key].host;
+        checkstart = checkstart && playersInfos[key].gamestart;
+      })
+      gameinfos.gamestart = checkstart;
+
+      let delta = 300;
+      if (Object.keys(playersInfos).length > 0) {
+        if (!checkhost) {
+          console.log("no host")
+          let newkey = Object.keys(playersInfos)[0];
+          makehost(newkey);
+        }
+
+        if (playersInfos[playerId].host) {
+          if (checkready && !checkstart) {
+            startGame();
+          }
+          if (checkalive == 1 && checkstart) {
+            delta = 3000
+            console.log('triggered')
+            setTimeout(() => {endGame()},  2500);
+          }
+        }
+        if (checkready && !checkstart) {
+          update(ref(database, `/infos/${playerId}`), {gamestart: true})
+        }
+        if (checkalive == 1 && checkstart) {
+          delta = 3000
+          //setTimeout(() => resetStuff(),  2500);
+        }
+      }
+
+      setTimeout(() => infiniteLoop(), delta)
+    }
+
 
     onValue(allPlayersRef, (snapshot) => {
       //Fires whenever a change occurs
-      players = snapshot.val() || {};
+      players = snapshot.val() || {}; 
       Object.keys(players).forEach((key) => {
         const characterState = players[key];
         let el = playerElements[key];
@@ -428,10 +521,11 @@ function isOOB(x,y) {
       gameContainer.appendChild(characterElement);
     })
 
+
     onValue(allPlayersRef, (snapshot) => {
       if (!tilesinit && Object.keys(playerElements).length == 1) {
-        initTiles()
-        update(playerRef, {host: true});
+        fillTiles()
+        update(playerInfosRef, {host: true});
       }
       initSelect();
     }, {onlyOnce: true}
@@ -561,16 +655,21 @@ function isOOB(x,y) {
     }
 
     fireButton.addEventListener("click", () => {
-      if (fireButton.getAttribute("available") == "true" && players[playerId].alive) {
+      if (fireButton.getAttribute("available") == "true" && playersInfos[playerId].alive) {
         placeProj();
         fireButton.setAttribute("available", "false");
         countdown(5);
       }
-
     })
 
-    //Place my first coin
-    //placeCoin();
+    readyButton.addEventListener("click", () => {
+      if (fireButton.getAttribute("available") == "true" && !playersInfos[playerId].ready) {
+        readyButton.setAttribute("available", "false");
+        update(playerInfosRef, {ready: true});
+      }
+    })
+
+    infiniteLoop();
 
   }
 
@@ -579,27 +678,27 @@ function isOOB(x,y) {
       //You're logged in!
       playerId = user.uid;
       playerRef = ref(database, `players/${playerId}`);
+      playerInfosRef = ref(database, `infos/${playerId}`);
 
       const name = createName();
       playerNameInput.value = name;
 
       const {x, y} = getRandomSafeSpot();
 
-
+      set(ref(database, `infos/${playerId}`), {gamestart: false, alive: true, host: false, ready: false})
       set(playerRef, {
         id: playerId,
         name,
-        direction: "right",
+        direction: "down",
         color: randomFromArray(playerColors),
         x,
         y,
         coins: 10,
-        alive: true,
-        host: false
-      })
+      }) 
 
       //Remove me from Firebase when I diconnect
       onDisconnect(playerRef).remove();
+      onDisconnect(playerInfosRef).remove();
 
       //Begin the game now that we are signed in
       initGame();
