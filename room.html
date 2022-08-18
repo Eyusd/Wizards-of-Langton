@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <title>Wizards of Langton</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" type="text/css">
+  </head>
+  <body>
+    <div class="game-container">
+    </div>
+    <div class="menu">
+      <div class="player-info">
+        <div>
+          <label for="player-name">Your Name</label>
+          <input id="player-name" maxlength="10" type="text" />
+        </div>
+        <div>
+          <button id="player-color">Change Color</button>
+        </div>
+      </div>
+      <div id="expl">Craft your spell</div>
+      <div class="game-input">
+        <div class="wrapper">
+          <div style="margin: 0 20 0 10; transform: scale(1.5); overflow: hidden; background: url(/images/tileset.png); image-rendering: pixelated; width:16px; height:16px; background-position-x: 0px;"></div>
+          <label class="form">
+            <select id="oak-dir"><option>turn left</option><option>turn right</option><option>turn back</option><option>go left</option><option>go right</option><option>go up</option><option>go down</option><option>keep moving</option></select>
+          </label>
+          <label class="form">
+            <select id="oak-fill"><option>fill oak</option><option>fill tile</option><option>fill cobble</option><option>fill spruce</option><option>fill void</option><option>nothing</option></select>
+          </label>
+        </div>
+        <div class="wrapper">
+          <div style="margin: 0 20 0 10; transform: scale(1.5); overflow: hidden; background: url(/images/tileset.png); image-rendering: pixelated; width:16px; height:16px; background-position-x: 16px;"></div>
+          <label class="form">
+            <select id="tile-dir"><option>turn left</option><option>turn right</option><option>turn back</option><option>go left</option><option>go right</option><option>go up</option><option>go down</option><option>keep moving</option></select>
+          </label>
+          <label class="form">
+            <select id="tile-fill"><option>fill oak</option><option>fill tile</option><option>fill cobble</option><option>fill spruce</option><option>fill void</option><option>nothing</option></select>
+          </label>
+        </div>
+        <div class="wrapper">
+          <div style="margin: 0 20 0 10; transform: scale(1.5); overflow: hidden; background: url(/images/tileset.png); image-rendering: pixelated; width:16px; height:16px; background-position-x: 32px;"></div>
+          <label class="form">
+            <select id="cobble-dir"><option>turn left</option><option>turn right</option><option>turn back</option><option>go left</option><option>go right</option><option>go up</option><option>go down</option><option>keep moving</option></select>
+          </label>
+          <label class="form">
+            <select id="cobble-fill"><option>fill oak</option><option>fill tile</option><option>fill cobble</option><option>fill spruce</option><option>fill void</option><option>nothing</option></select>
+          </label>
+        </div>
+        <div class="wrapper">
+          <div style="margin: 0 20 0 10; transform: scale(1.5); overflow: hidden; background: url(/images/tileset.png); image-rendering: pixelated; width:16px; height:16px; background-position-x: 48px;"></div>
+          <label class="form">
+            <select id="spruce-dir"><option>turn left</option><option>turn right</option><option>turn back</option><option>go left</option><option>go right</option><option>go up</option><option>go down</option><option>keep moving</option></select>
+          </label>
+          <label class="form">
+            <select id="spruce-fill"><option>fill oak</option><option>fill tile</option><option>fill cobble</option><option>fill spruce</option><option>fill void</option><option>nothing</option></select>
+          </label>
+        </div>
+        <div class="wrapper">
+          <div style="margin: 0 20 0 10; transform: scale(1.5); overflow: hidden; background: url(/images/tileset.png); image-rendering: pixelated; width:16px; height:16px; background-position-x: 64px;"></div>
+          <label class="form">
+            <select id="void-dir"><option>turn left</option><option>turn right</option><option>turn back</option><option>go left</option><option>go right</option><option>go up</option><option>go down</option><option>keep moving</option></select>
+          </label>
+          <label class="form">
+            <select id="void-fill"><option>fill oak</option><option>fill tile</option><option>fill cobble</option><option>fill spruce</option><option>fill void</option><option>nothing</option></select>
+          </label>
+        </div>
+        <div>
+          <button id="fire" available="true">Fire !</button>
+        </div>
+        <div>
+          <button id="ready" available="true">Ready !</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./app.js"></script>
+    <script src="./KeyPressListener.js"></script>
+  </body>
+</html>
