@@ -368,7 +368,9 @@ function isOOB(x,y) {
             (players[playerId].direction == "left" && xChange == -1)) {
           players[playerId].x = newX;
           players[playerId].y = newY;
-          players[playerId].coins = players[playerId].coins - 1;
+          if (gameinfos.gamestart) {
+            players[playerId].coins = players[playerId].coins - 1;
+          }
         }
       }
       if (yChange === 1) {
